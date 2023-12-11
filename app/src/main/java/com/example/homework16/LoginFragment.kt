@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.homework16.databinding.FragmentLoginBinding
 import kotlinx.coroutines.launch
 
@@ -52,24 +54,26 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(FragmentLoginBinding::i
     private fun collect(){
         lifecycleScope.launch {
             viewModel.response.collect{ response ->
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
 
-                if(response!=null){
-                    if (response!!.isSuccessful) {
-                        Toast.makeText(context, "successful login", Toast.LENGTH_SHORT).show()
-                        Log.d("tag123","successful login")
-                        val responseBody = response.body()
-                        Log.d("tag123","${responseBody.toString()}")
+                    if(response!=null){
+                        if (response!!.isSuccessful) {
+                            Toast.makeText(context, "successful login", Toast.LENGTH_SHORT).show()
+                            Log.d("tag123","successful login")
+                            val responseBody = response.body()
+                            Log.d("tag123","${responseBody.toString()}")
 
-                    } else {
-                        Toast.makeText(context, "Unsuccessful login", Toast.LENGTH_SHORT).show()
-                        Log.d("tag123","Unsuccessful login")
+                        } else {
+                            Toast.makeText(context, "Unsuccessful login", Toast.LENGTH_SHORT).show()
+                            Log.d("tag123","Unsuccessful login")
+                        }
+                    }else{
+                        if(viewModel.connectionError){
+                            Toast.makeText(context, "Check network connection", Toast.LENGTH_SHORT).show()// will only show on first time when offline
+                        }
                     }
-                }else{
-                    if(viewModel.connectionError){
-                        Toast.makeText(context, "Check network connection", Toast.LENGTH_SHORT).show()// will only show on first time when offline
-                    }
+
                 }
-
             }
         }
     }

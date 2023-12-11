@@ -4,15 +4,11 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.homework16.databinding.FragmentRegisterBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class RegisterFragment : BaseFragment<FragmentRegisterBinding>(FragmentRegisterBinding::inflate){
 
@@ -57,24 +53,26 @@ class RegisterFragment : BaseFragment<FragmentRegisterBinding>(FragmentRegisterB
 
     private fun collect(){
         lifecycleScope.launch {
-            viewModel.response.collect{ response ->
-                if(response!=null){
-                    if (response!!.isSuccessful) {
-                        Toast.makeText(context, "successful registration", Toast.LENGTH_SHORT).show()
-                        Log.d("tag123","successful registration")
-                        val responseBody = response.body()
-                        Log.d("tag123","${responseBody.toString()}")
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.response.collect{ response ->
+                    if(response!=null){
+                        if (response!!.isSuccessful) {
+                            Toast.makeText(context, "successful registration", Toast.LENGTH_SHORT).show()
+                            Log.d("tag123","successful registration")
+                            val responseBody = response.body()
+                            Log.d("tag123","${responseBody.toString()}")
 
-                    } else {
-                        Toast.makeText(context, "Unsuccessful registration", Toast.LENGTH_SHORT).show()
-                        Log.d("tag123","Unsuccessful registration")
+                        } else {
+                            Toast.makeText(context, "Unsuccessful registration", Toast.LENGTH_SHORT).show()
+                            Log.d("tag123","Unsuccessful registration")
+                        }
+                    }else{
+                        if(viewModel.connectionError){
+                            Toast.makeText(context, "Check network connection", Toast.LENGTH_SHORT).show() // will only show on first time when offline
+                        }
                     }
-                }else{
-                    if(viewModel.connectionError){
-                        Toast.makeText(context, "Check network connection", Toast.LENGTH_SHORT).show() // will only show on first time when offline
-                    }
+
                 }
-
             }
         }
     }
@@ -106,15 +104,4 @@ class RegisterFragment : BaseFragment<FragmentRegisterBinding>(FragmentRegisterB
     }
 }
 
-/*
 
- if (response.isSuccessful) {
-                        Toast.makeText(context, "successful registration", Toast.LENGTH_SHORT).show()
-                        Log.d("tag123","successful registration")
-                        val responseBody = response.body()
-
-                    } else {
-                        Toast.makeText(context, "Unsuccessful registration", Toast.LENGTH_SHORT).show()
-                        Log.d("tag123","Unsuccessful registration")
-                    }
- */
